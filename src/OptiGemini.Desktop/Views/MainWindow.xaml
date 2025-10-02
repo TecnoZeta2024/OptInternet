@@ -1,0 +1,195 @@
+<Window x:Class="OptiGemini.Desktop.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="OptiGemini Network Optimizer" 
+        Height="600" Width="900"
+        MinHeight="500" MinWidth="800"
+        Background="{StaticResource BackgroundBrush}">
+    
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Status Card -->
+        <Border Grid.Row="0" Style="{StaticResource StatusCard}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status Indicator -->
+                <Ellipse Grid.Column="0" 
+                         Width="20" Height="20" 
+                         Margin="0,0,16,0"
+                         VerticalAlignment="Center">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="{Binding StatusColor}"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <!-- Status Text -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Network Monitoring Status" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding StatusText}" 
+                               FontSize="20" 
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Control Bar -->
+        <Border Grid.Row="1" Style="{StaticResource StatusCard}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                
+                <!-- Start Button -->
+                <Button Content="▶ Start" 
+                        Command="{Binding StartCommand}"
+                        Style="{StaticResource SuccessButton}"
+                        MinWidth="100"
+                        Margin="4"/>
+
+                <!-- Pause Button -->
+                <Button Content="⏸ Pause" 
+                        Command="{Binding PauseCommand}"
+                        Style="{StaticResource WarningButton}"
+                        MinWidth="100"
+                        Margin="4"/>
+
+                <!-- Resume Button -->
+                <Button Content="▶ Resume" 
+                        Command="{Binding ResumeCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        MinWidth="100"
+                        Margin="4"/>
+
+                <!-- Stop Button -->
+                <Button Content="⏹ Stop" 
+                        Command="{Binding StopCommand}"
+                        Style="{StaticResource ErrorButton}"
+                        MinWidth="100"
+                        Margin="4"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <TabControl Grid.Row="2" Margin="0,8,0,0">
+            
+            <!-- Dashboard Tab -->
+            <TabItem Header="Dashboard">
+                <Grid Margin="16">
+                    <Border Style="{StaticResource StatusCard}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="📊 Dashboard" 
+                                       FontSize="48" 
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock Text="Real-time metrics will appear here" 
+                                       FontSize="16" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="(Phase 2 Feature)" 
+                                       FontSize="12" 
+                                       Foreground="{StaticResource TextDisabledBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Logs Tab -->
+            <TabItem Header="Logs">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Log Header -->
+                    <TextBlock Grid.Row="0" 
+                               Text="Execution Log" 
+                               FontSize="16" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+
+                    <!-- Log Viewer -->
+                    <Border Grid.Row="1" 
+                            BorderBrush="{StaticResource BorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="4"
+                            Background="White">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding LogEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" 
+                                                   FontFamily="Consolas" 
+                                                   FontSize="11"
+                                                   Padding="8,2"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Settings Tab -->
+            <TabItem Header="Settings">
+                <Grid Margin="16">
+                    <Border Style="{StaticResource StatusCard}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="⚙️ Settings" 
+                                       FontSize="48" 
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock Text="Configuration options will appear here" 
+                                       FontSize="16" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="(Phase 2 Feature)" 
+                                       FontSize="12" 
+                                       Foreground="{StaticResource TextDisabledBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- About Tab -->
+            <TabItem Header="About">
+                <Grid Margin="16">
+                    <Border Style="{StaticResource StatusCard}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="OptiGemini" 
+                                       FontSize="32" 
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="Network Optimizer v3.0.0" 
+                                       FontSize="16" 
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="© 2025 OptiGemini Team" 
+                                       FontSize="12" 
+                                       Foreground="{StaticResource TextDisabledBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
