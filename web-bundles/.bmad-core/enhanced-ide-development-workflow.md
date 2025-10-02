@@ -84,6 +84,11 @@ The Test Architect (Quinn) provides comprehensive quality assurance throughout t
 #   - Reliability: Error handling, recovery
 #   - Maintainability: Code quality, documentation
 # Run when: Before marking "Ready for Review"
+
+# 5. BACKUP MIRROR (Protect work before review)
+git push backup HEAD
+# Mirrors the current feature branch to backup remote per Docs/Git-Flow-Backup-Plan.md
+# Run when: Before requesting QA review or creating pull request
 ```
 
 ### Stage 3: Story Review (Quality Gate Assessment)
@@ -136,10 +141,10 @@ The Test Architect (Quinn) provides comprehensive quality assurance throughout t
 
 | **Status**   | **Meaning**                                  | **Action Required**     | **Can Proceed?** |
 | ------------ | -------------------------------------------- | ----------------------- | ---------------- |
-| **PASS**     | All critical requirements met                | None                    | ✅ Yes           |
-| **CONCERNS** | Non-critical issues found                    | Team review recommended | ⚠️ With caution  |
-| **FAIL**     | Critical issues (security, missing P0 tests) | Must fix                | ❌ No            |
-| **WAIVED**   | Issues acknowledged and accepted             | Document reasoning      | ✅ With approval |
+| **PASS**     | All critical requirements met                | None                    | ✅ Yes            |
+| **CONCERNS** | Non-critical issues found                    | Team review recommended | ⚠️ With caution   |
+| **FAIL**     | Critical issues (security, missing P0 tests) | Must fix                | ❌ No             |
+| **WAIVED**   | Issues acknowledged and accepted             | Document reasoning      | ✅ With approval  |
 
 ### Risk-Based Testing Strategy
 

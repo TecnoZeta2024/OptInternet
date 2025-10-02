@@ -1,0 +1,1258 @@
+---
+# ==================================================================================
+# BROWNFIELD ARCHITECTURE DOCUMENT
+# OptiGemini v2.2 → v3.0 Transformation
+# ==================================================================================
+
+metadata:
+  document_type: Brownfield Architecture Analysis & Transformation Plan
+  project_name: OptiGemini
+  current_version: v2.2
+  target_version: v3.0
+  architect: Winston
+  date_created: 2025-10-02
+  date_updated: 2025-10-02
+  status: DRAFT - Awaiting Review
+  revision: 2.0
+  changelog:
+    - version: 2.0
+      date: 2025-10-02
+      changes: Integrated UI/UX specifications from front-end-spec.md (Traffic Control Charts, Execution Console, Design Tokens, 2 Hz sampling)
+  
+project_context:
+  description: |
+    OptiGemini is a sophisticated PowerShell-based network optimization and 
+    monitoring tool that provides real-time diagnostics, automatic recovery, 
+    hotspot management, and performance optimization. The current version (v2.2) 
+    is a console-based monolithic script of 1736 lines. The mission is to transform 
+    this into a professional Windows 11 desktop application while preserving all 
+    existing functionality.
+  
+  business_drivers:
+    - Democratize network stability for non-technical users
+    - Modernize UX to match Windows 11 design standards
+    - Expand market reach beyond CLI-comfortable users
+    - Enable professional distribution and monetization
+    - Build active open-source community
+  
+  transformation_approach: Incremental Modernization (Preserve & Enhance)
+
+# ==================================================================================
+# CURRENT STATE ANALYSIS
+# ==================================================================================
+
+current_architecture:
+  overview: |
+    OptiGemini v2.2 is a single-file PowerShell script with a custom console-based
+    dashboard using ANSI positioning and colored output. It implements a continuous
+    monitoring loop with adaptive network recovery strategies.
+  
+  technology_stack:
+    runtime: PowerShell 5.1+ / PowerShell 7.x
+    os_integration:
+      - WMI/CIM queries for system metrics
+      - Direct network adapter manipulation via Get-NetAdapter
+      - Registry modifications for TCP/IP optimization
+      - netsh commands for hotspot and advanced configuration
+    external_dependencies: None (built-in cmdlets only)
+    
+  architecture_style:
+    primary: Monolithic Console Application
+    patterns:
+      - Event-driven monitoring loop
+      - Stateful script-scoped variables
+      - Region-based code organization
+      - Functional decomposition with 35+ functions
+  
+  code_structure:
+    total_lines: 1736
+    regions:
+      - GLOBAL SCRIPT CONFIG (lines 56-91)
+      - VARIABLES Y CONFIGURACION INICIAL (lines 117-186)
+      - FUNCIONES PRINCIPALES (lines 188-1736)
+    
+    function_count: 35
+    function_categories:
+      utility_functions:
+        - Test-ConsoleSize
+        - Show-Spinner
+        - Write-Log
+        - Set-ConsoleEncoding
+        - Get-SafeMultiplier
+        - Set-CursorPosition
+      
+      dashboard_functions:
+        - Show-PremiumDashboard
+        - Show-StaticDashboard
+        - Update-DynamicFields
+        - Update-LogArea
+        - Add-LogMessage
+        - Write-PaddedField
+        - Get-Bar
+        - Update-SystemMetrics
+        - Set-CurrentAction
+      
+      network_core_functions:
+        - Test-InternetConnection
+        - Get-ExternalIp
+        - Restart-InternetAdapter
+        - Get-NetworkMetrics
+        - Test-ConnectionStability
+        - Monitor-ConnectionDrops
+      
+      optimization_functions:
+        - Optimize-NetworkSettings
+        - Optimize-NetworkAdapterAdvanced
+        - Set-FastestDNS
+        - Optimize-TCPIPSettings
+        - Set-IntelligentQoS
+        - Optimize-NetworkBuffers
+        - Optimize-MTUSize
+      
+      recovery_functions:
+        - Invoke-AdaptiveRecovery
+        - Repair-IntermittentConnection
+      
+      hotspot_functions:
+        - Start-Hotspot
+      
+      monitoring_functions:
+        - Monitor-NetworkSpeeds
+
+  key_state_variables:
+    monitoring_state:
+      - script:startTime
+      - script:reconnectionCount
+      - script:totalDowntimeStopwatch
+      - script:isDown
+      - script:currentAction
+      - script:hotspotActive
+    
+    metrics:
+      - script:currentLatency
+      - script:averageLatency
+      - script:packetLoss
+      - script:currentJitter
+      - script:peakLatency
+      - script:minLatency
+      - script:dnsResponseTime
+      - script:performanceScore
+    
+    network_info:
+      - script:lastIpAddress
+      - script:connectionType
+      - script:networkSpeed
+      - script:optimalDNS
+      - script:adapterId
+      - script:adapterDescription
+      - script:currentUploadSpeed
+      - script:currentDownloadSpeed
+    
+    system_metrics:
+      - script:memoryUsage
+      - script:cpuUsage
+      - script:diskUsage
+      - script:osVersionString
+    
+    performance_tracking:
+      - script:performanceHistory (array)
+      - script:logMessages (array)
+      - script:criticalErrors (array)
+
+  configuration_parameters:
+    hotspot:
+      SSID: OptiGemini_5G
+      Password: gemini1234
+    
+    monitoring:
+      PrimaryCheckAddress: 8.8.8.8
+      SecondaryCheckAddress: 1.1.1.1
+      TertiaryCheckAddress: 208.67.222.222
+      CheckIntervalSeconds: 3
+      MaxRetries: 5
+      RetryDelaySeconds: 1
+    
+    thresholds:
+      LatencyThreshold: 150 ms
+      PacketLossThreshold: 5 %
+      JitterThreshold: 30 ms
+
+  dashboard_architecture:
+    approach: Two-Phase Rendering
+    phases:
+      static_structure:
+        function: Show-StaticDashboard
+        frequency: Once on initialization
+        responsibilities:
+          - Draw ASCII borders and section headers
+          - Establish layout grid (80x44 console)
+          - Create placeholder fields
+      
+      dynamic_updates:
+        function: Update-DynamicFields
+        frequency: Every 3 seconds (configurable)
+        responsibilities:
+          - Update real-time metrics
+          - Refresh connection status
+          - Update progress bars
+          - Refresh system metrics
+      
+      log_streaming:
+        function: Update-LogArea
+        frequency: On new log entry
+        responsibilities:
+          - Display last 8 log messages
+          - Scroll log buffer
+          - Color-code by severity
+
+  windows_integration_points:
+    network_adapters:
+      cmdlets:
+        - Get-NetAdapter
+        - Set-DnsClientServerAddress
+        - Get-NetIPAddress
+      operations:
+        - Enable/disable adapters
+        - Configure DNS servers
+        - Detect connection type (Ethernet/Wi-Fi)
+    
+    registry:
+      paths:
+        - HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters
+        - HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces
+      operations:
+        - TCP window optimization
+        - MTU configuration
+        - Congestion control settings
+    
+    system_metrics:
+      wmi_queries:
+        - Win32_OperatingSystem (memory, OS version)
+        - Win32_Processor (CPU usage)
+        - Win32_PerfFormattedData_PerfOS_Memory
+        - Win32_NetworkAdapterConfiguration
+    
+    hotspot_management:
+      commands:
+        - netsh wlan set hostednetwork
+        - netsh wlan start/stop hostednetwork
+        - INetSharingManager COM object
+      requirements:
+        - Administrator privileges
+        - Wi-Fi adapter with AP support
+
+# ==================================================================================
+# TECHNICAL DEBT & PAIN POINTS
+# ==================================================================================
+
+technical_debt:
+  architectural_issues:
+    - issue: Monolithic structure makes unit testing impossible
+      severity: HIGH
+      impact: Quality assurance, maintainability
+      
+    - issue: Heavy reliance on script-scoped global variables
+      severity: MEDIUM
+      impact: State management complexity, race conditions risk
+      
+    - issue: Console rendering tightly coupled with business logic
+      severity: HIGH
+      impact: Cannot separate presentation from logic
+      
+    - issue: No abstraction layers or interfaces
+      severity: MEDIUM
+      impact: Difficult to mock dependencies or swap implementations
+  
+  code_quality_issues:
+    - issue: Inconsistent error handling patterns
+      severity: MEDIUM
+      example: Some functions use try-catch, others rely on -ErrorAction
+      
+    - issue: Magic numbers scattered throughout code
+      severity: LOW
+      example: Hardcoded console positions, timing values
+      
+    - issue: Limited input validation
+      severity: MEDIUM
+      example: Configuration parameters not validated on startup
+  
+  operational_challenges:
+    - issue: Requires administrator privileges for all operations
+      severity: MEDIUM
+      impact: User friction, security surface area
+      recommendation: Separate privileged operations from read-only monitoring
+      
+    - issue: Console size dependencies fragile
+      severity: LOW
+      impact: Breaks on small terminal windows
+      
+    - issue: No configuration persistence
+      severity: HIGH
+      impact: Users must edit script file to change settings
+      
+    - issue: Log file grows unbounded
+      severity: MEDIUM
+      impact: Disk space consumption over time
+  
+  user_experience_gaps:
+    - issue: CLI-only interface limits adoption
+      severity: CRITICAL
+      impact: Non-technical users cannot use tool
+      
+    - issue: No background operation mode
+      severity: HIGH
+      impact: Must keep console window visible
+      
+    - issue: No notifications for critical events
+      severity: MEDIUM
+      impact: Users must watch dashboard for status changes
+      
+    - issue: No scheduling or automation support
+      severity: LOW
+      impact: Cannot activate profiles on schedule
+
+# ==================================================================================
+# STRENGTHS & ASSETS TO PRESERVE
+# ==================================================================================
+
+architectural_strengths:
+  battle_tested_logic:
+    description: 1736 lines of proven network optimization algorithms
+    value: Months of real-world testing and refinement
+    preservation_strategy: Wrap in PowerShellBridge service, minimal changes
+  
+  comprehensive_functionality:
+    capabilities:
+      - Multi-tier connectivity testing (Primary/Secondary/Tertiary DNS)
+      - Adaptive recovery with escalation strategies
+      - Real-time metrics collection (latency, jitter, packet loss)
+      - DNS optimization with automatic fastest server selection
+      - QoS traffic prioritization
+      - TCP/IP stack optimization
+      - Hotspot management with ICS integration
+      - Network adapter advanced configuration
+      - MTU optimization
+      - Connection stability monitoring
+    value: Feature-complete network toolkit
+    preservation_strategy: Expose all functions via service layer
+  
+  robust_error_handling:
+    description: Graceful degradation on failures
+    examples:
+      - Fallback DNS cascade (Primary → Secondary → Tertiary)
+      - Adapter restart retry logic with exponential backoff
+      - Safe console operations with dimension validation
+    preservation_strategy: Enhance with structured logging and telemetry
+  
+  performance_tracking:
+    description: Historical metrics with trend analysis
+    implementation: '\"script:performanceHistory array maintains rolling metrics'
+    preservation_strategy: Migrate to time-series database or JSON persistence
+
+  windows_integration_expertise:
+    description: Deep integration with Windows networking subsystem
+    depth:
+      - Registry-based TCP/IP tuning
+      - COM object manipulation for ICS
+      - WMI queries for system metrics
+      - netsh command orchestration
+    preservation_strategy: Encapsulate in platform service layer
+
+# ==================================================================================
+# TARGET ARCHITECTURE (v3.0)
+# ==================================================================================
+
+target_architecture:
+  overview: |
+    OptiGemini v3.0 will be a native Windows desktop application using WPF for 
+    presentation, C# for service orchestration, and the existing PowerShell script
+    as the core engine. This hybrid approach minimizes risk by preserving the 
+    proven logic while providing a modern UX.
+  
+  architecture_style:
+    primary: Layered Architecture with Hybrid Technology Stack
+    secondary_patterns:
+      - Service-Oriented (internal services)
+      - Event-Driven (UI updates via observables)
+      - Repository Pattern (configuration persistence)
+  
+  technology_stack:
+    presentation_layer:
+      framework: WPF (.NET 6/7)
+      ui_toolkit: Material Design in XAML Toolkit
+      charting: LiveCharts2
+      tray_integration: Hardcodet.NotifyIcon.Wpf
+      design_system:
+        color_palette: Blue/White/Black with Light/Dark themes
+        typography:
+          primary: Segoe UI Variable (Windows 11)
+          secondary: Inter (fallback)
+          monospace: Cascadia Code (logs/console)
+        iconography: Fluent System Icons
+        spacing: 8px base grid (4px fine-tune)
+        corner_radius: 8px (4px compact)
+      accessibility: WCAG 2.1 AA compliant
+    
+    service_layer:
+      language: C# (.NET 6/7)
+      powershell_interop: System.Management.Automation
+      configuration: Newtonsoft.Json or System.Text.Json
+      scheduling: Quartz.NET (future)
+    
+    core_engine:
+      runtime: PowerShell 7.x (embedded via runspace)
+      script: OpTinternet.ps1 (refactored for module pattern)
+    
+    data_layer:
+      configuration: JSON files in %APPDATA%\\OptiGemini
+      logs: Structured text files with rotation
+      metrics: In-memory time-series (future: SQLite)
+  
+  ui_components_library:
+    core_components:
+      StatusCard:
+        purpose: Communicate connection status at a glance
+        variants: [Optimal (Green), Degraded (Amber), Offline/Critical (Red)]
+        states: [Loading, Idle, Updating, Recovering]
+        usage: Top of dashboard, semantic color bar, last check time
+      
+      MetricCard:
+        purpose: Display single key metric with qualitative label
+        variants: [Latency, Jitter, PacketLoss]
+        states: [Normal, Attention, Critical, NoData]
+        usage: Numeric value + unit, trend arrow, tooltip with 5-min stats
+      
+      ChartsPanel:
+        purpose: Visualize rolling 5-minute history
+        variants: [Combined (overlay), Split (stacked)]
+        states: [Streaming, Paused, Expanded, Empty]
+        technology: LiveCharts2 with throttled updates (2 Hz sampling)
+        performance: Maintain ≤16ms frame time, decimation for 100+ samples
+      
+      TrafficControlChart:
+        purpose: Download/Upload rates with statistical control bands
+        variants: [Overlay (both series), Split (two subcharts)]
+        states: [WarmingUp (no bands), InControl, OutOfControl (highlighted points)]
+        data:
+          - rxKbps, txKbps (kilobits per second)
+          - windowMeanRx/Tx, windowStdRx/Tx
+          - control_window: 120 samples (~60s @ 2 Hz)
+          - bands: UCL/LCL = μ ± 3σ
+        usage: Show bands only with ≥30 samples, highlight out-of-control points, log WARN
+      
+      ExecutionConsole:
+        purpose: Real-time backend execution streaming
+        variants: [Docked Side Panel, Bottom Drawer, Detached (Logs Tab)]
+        states: [Live (auto-scroll), Paused, Filtered, BufferFull]
+        data_contract:
+          - timestamp: DateTime
+          - level: [INFO, WARN, ERROR]
+          - category: [Engine, Recovery, Backtest]
+          - message: string
+          - source: string (optional)
+        performance:
+          - Buffer limit: 500-5000 lines (FIFO purge)
+          - Batch append to avoid layout thrashing
+          - Virtualization for rendering
+          - Auto-pause scroll on manual user scroll
+        usage: Color-code by level, filter by category, Copy/Save buffer, Pin/Unpin to Dashboard
+      
+      ControlBar:
+        purpose: Primary monitoring actions
+        variants: [Running, Paused, Stopped]
+        controls: [Start/Stop, Pause, Profile selector, Export]
+        shortcuts: [Ctrl+R (Start/Stop), Ctrl+P (Pause), Ctrl+E (Export)]
+      
+      ProfileTile:
+        purpose: Profile preset selection
+        variants: [Home, Office, Gaming, Custom]
+        states: [Selected, Unselected, Disabled (invalid)]
+        actions: [Select, Edit, Delete, Create New]
+      
+      LogList:
+        purpose: Stream and view events efficiently
+        variants: [Dense, Comfortable]
+        states: [Live (auto-scroll), Paused, Filtered, Empty]
+        technology: Virtualized list with sticky columns
+        actions: [Copy, Search, Open folder, Filter by severity]
+      
+      ToastNotification:
+        purpose: Inform critical events
+        variants: [Success, Warning, Error, Info]
+        content: Title + message with key metrics + deep link
+        respect: Focus Assist, collapse to Notification Center when suppressed
+    
+    design_tokens:
+      colors:
+        light_theme:
+          primary: "#1E40AF (Blue 800)"
+          primary_hover: "#1D4ED8 (Blue 700)"
+          background: "#FFFFFF"
+          surface: "#F8FAFC (Slate 50)"
+          text: "#0B0B0C (Near-Black)"
+          text_secondary: "#4B5563 (Slate 600)"
+          border: "#E5E7EB (Gray 200)"
+          success: "#16A34A (Green 600)"
+          warning: "#F59E0B (Amber 500)"
+          error: "#DC2626 (Red 600)"
+        
+        dark_theme:
+          primary: "#60A5FA (Blue 300)"
+          primary_hover: "#3B82F6 (Blue 400)"
+          background: "#0B0B0C (Near-Black)"
+          surface: "#111827 (Gray 900)"
+          text: "#F3F4F6"
+          text_secondary: "#9CA3AF"
+          border: "#374151"
+          success: "#22C55E (Green 600)"
+          warning: "#FBBF24 (Amber 500)"
+          error: "#F87171 (Red 400)"
+        
+        status:
+          optimal: "#16A34A (Green 600)"
+          degraded: "#F59E0B (Amber 500)"
+          critical: "#DC2626 (Red 600)"
+      
+      typography:
+        type_scale:
+          H1: "24px, 600, 32px LH"
+          H2: "20px, 600, 28px LH"
+          H3: "16px, 600, 24px LH"
+          Body: "14px, 400, 20px LH"
+          Small: "12px, 400, 16px LH"
+      
+      spacing:
+        base: 8px
+        scale: [4, 8, 12, 16, 24, 32]
+      
+      elevation:
+        style: Minimal (1px borders, shadows only for overlays/menus)
+
+  monitoring_defaults:
+    sampling_frequency: 2 Hz
+    sampling_interval: 500 ms
+    internet_activity_unit: Kbps (kilobits per second)
+    control_window_samples: 120
+    control_window_duration: "~60s @ 2 Hz"
+    control_bands_formula: "UCL/LCL = μ ± 3σ"
+    minimum_samples_for_bands: 30
+    chart_refresh_rate: 3 seconds (network metrics)
+    ui_frame_target: "≤16ms (60 FPS)"
+  
+  data_contracts:
+    ExecutionConsoleLine:
+      fields:
+        - timestamp: DateTime
+        - level: "INFO | WARN | ERROR"
+        - category: "Engine | Recovery | Backtest"
+        - message: string
+        - source: string (optional)
+      usage: Stream to ExecutionConsole component
+    
+    TrafficSample:
+      fields:
+        - timestamp: DateTime
+        - rxKbps: double
+        - txKbps: double
+        - windowMeanRx: double (optional)
+        - windowStdRx: double (optional)
+        - windowMeanTx: double (optional)
+        - windowStdTx: double (optional)
+      calculation:
+        formula: "Kbps = (Δbytes × 8) / Δt / 1000"
+        source: Get-NetAdapterStatistics (PowerShell)
+      usage: Feed to TrafficControlChart component
+    
+    NetworkMetrics:
+      fields:
+        - timestamp: DateTime
+        - latency: double (ms)
+        - jitter: double (ms)
+        - packetLoss: double (percentage)
+        - dnsResponseTime: double (ms)
+        - publicIP: string
+        - adapterName: string
+        - connectionType: "Ethernet | WiFi | Unknown"
+      usage: Display in MetricCard components
+    
+    ConnectionStatus:
+      states: [Optimal, Degraded, Offline, Stopped, Starting, Recovering]
+      fields:
+        - state: string
+        - lastCheck: DateTime
+        - activeProfile: string
+        - uptime: TimeSpan
+        - reconnectionCount: int
+      usage: Display in StatusCard component
+
+  layer_responsibilities:
+    presentation_layer:
+      MainWindow.xaml:
+        components:
+          - StatusCard: Connection status (Optimal/Degraded/Offline)
+          - MetricCard: Latency, Jitter, Packet Loss cards
+          - ChartsPanel: 5-minute rolling performance charts
+          - TrafficControlChart: Download/Upload rates with control bands (μ ± 3σ)
+          - ExecutionConsole: Real-time backend execution streaming (docked panel/drawer)
+          - ControlBar: Start/Stop, Pause, Profile selector, Export
+        tabs:
+          - Dashboard: Status + metrics + charts + console
+          - Logs: Streaming log viewer with severity filters
+          - Settings: Profiles, monitoring config, theme selector
+          - About: Version info, update check, documentation links
+        responsiveness:
+          - Compact: ≤960px (1 column, drawer console)
+          - Regular: 961-1440px (2 columns, side panel console)
+          - Wide: >1440px (3 columns, expanded console)
+      
+      SettingsWindow.xaml:
+        sections:
+          - Profile Management: Home/Office/Gaming/Custom tiles
+          - Monitoring: Check interval (3/5/10s), thresholds, auto-start
+          - Advanced: DNS config, notifications, theme (Light/Dark/System)
+          - Updates: Auto-update settings, channel selection
+      
+      NotifyIcon:
+        features:
+          - Context menu: Status, Start/Stop, Profile switch, Settings, Exit
+          - Tooltip: Current status + latency
+          - Icon states: Green (healthy), Yellow (degraded), Red (offline), Gray (stopped)
+      
+      Toast Notifications:
+        via: Windows.UI.Notifications
+        triggers:
+          - Connection restored/lost
+          - Recovery escalation
+          - Optimization applied
+        respect: Focus Assist settings
+    
+    service_layer:
+      MonitoringService:
+        responsibilities:
+          - Manage monitoring lifecycle (Start/Stop/Pause)
+          - Invoke PowerShell engine via bridge
+          - Aggregate and cache metrics
+          - Implement watchdog for engine restart
+        state_management: Stateful singleton
+      
+      PowerShellBridge:
+        responsibilities:
+          - Create and manage PowerShell runspace
+          - Invoke functions from OpTinternet.ps1
+          - Marshal data between C# and PowerShell
+          - Handle async execution
+        threading: Background thread with async/await
+      
+      ConfigurationService:
+        responsibilities:
+          - Load/save configuration to JSON
+          - Manage profiles (CRUD operations)
+          - Validate configuration schema
+          - Provide default configuration
+        storage: %APPDATA%\\OptiGemini\\config.json
+      
+      UpdateService:
+        responsibilities:
+          - Check GitHub Releases API for updates
+          - Download and verify update packages
+          - Trigger update installation
+          - Handle rollback scenarios
+        technology: Squirrel.Windows (future)
+      
+      NotificationService:
+        responsibilities:
+          - Queue notification events
+          - Fire Windows toast notifications
+          - Respect Focus Assist settings
+          - Track notification history
+        integration: Windows.UI.Notifications
+    
+    core_engine_layer:
+      OpTinternet.ps1 (refactored):
+        changes_required:
+          - Remove dashboard rendering functions
+          - Export functions as PowerShell module
+          - Accept configuration via parameters
+          - Return structured data objects (PSCustomObject)
+          - Emit events for status changes
+        preserved_functions:
+          - All network testing functions
+          - All optimization functions
+          - All recovery functions
+          - All hotspot functions
+          - Metric collection functions
+    
+    data_layer:
+      configuration:
+        config.json:
+          structure:
+            - monitoring_settings
+            - threshold_settings
+            - hotspot_credentials
+            - active_profile
+        profiles/*.json:
+          presets:
+            - Home.json
+            - Office.json
+            - Gaming.json
+            - Custom.json
+      
+      logs:
+        OptiGemini.log: Rolling log file (daily rotation)
+        OptiGemini_errors.log: Error-only log
+      
+      cache:
+        metrics.json: Recent performance history (optional persistence)
+
+# ==================================================================================
+# MIGRATION STRATEGY
+# ==================================================================================
+
+migration_strategy:
+  approach: Strangler Fig Pattern (Incremental Replacement)
+  
+  phases:
+    phase_1_foundation:
+      duration: Weeks 1-4
+      goal: Prove hybrid architecture feasibility
+      
+      deliverables:
+        - WPF application shell (MainWindow skeleton)
+        - PowerShellBridge proof-of-concept
+        - MonitoringService state machine
+        - Basic dashboard displaying hardcoded metrics
+        - System tray icon with context menu
+      
+      powershell_changes:
+        - Extract Test-InternetConnection into standalone function
+        - Extract Get-NetworkMetrics into standalone function
+        - Verify functions return structured data
+        - No dashboard code migration yet
+      
+      validation_criteria:
+        - C# can invoke PowerShell functions
+        - PowerShell returns parsed metrics to C#
+        - UI displays metrics from PowerShell
+        - No console window required
+      
+      risks:
+        - PowerShell runspace instability
+        - Data marshaling complexity
+        - Threading deadlocks
+      
+      mitigation:
+        - Build comprehensive PoC in Week 1
+        - Implement watchdog early
+        - Use async/await consistently
+    
+    phase_2_feature_parity:
+      duration: Weeks 5-9
+      goal: Achieve functional equivalence with v2.2
+      
+      deliverables:
+        - Real-time charts (latency, jitter, packet loss)
+        - Profile system (load/save/switch)
+        - Configuration persistence
+        - Log viewer with filtering
+        - Hotspot controls
+        - All optimization functions accessible via UI
+      
+      powershell_changes:
+        - Remove Show-StaticDashboard
+        - Remove Update-DynamicFields
+        - Remove Update-LogArea
+        - Convert remaining functions to module pattern
+        - Add parameter validation
+        - Emit events for critical state changes
+      
+      validation_criteria:
+        - All FR-01 to FR-09 implemented
+        - Performance matches v2.2 (±5% latency)
+        - No regressions in recovery logic
+        - User acceptance testing shows ≥80% satisfaction
+      
+      risks:
+        - Feature creep delaying core functionality
+        - Performance degradation due to WPF overhead
+        - Missing edge cases from original script
+      
+      mitigation:
+        - Strict scope enforcement (refer to PRD)
+        - Performance profiling after each sprint
+        - Comprehensive integration test suite
+    
+    phase_3_enhancement:
+      duration: Weeks 10-12
+      goal: Add GUI-exclusive features
+      
+      deliverables:
+        - Windows toast notifications
+        - Export reports (CSV/HTML)
+        - Light/Dark theme support
+        - Auto-update mechanism
+        - CLI flags (--headless, --profile)
+        - Installer (MSI with WiX)
+      
+      powershell_changes:
+        - None (engine is stable)
+      
+      validation_criteria:
+        - All FR-10 to FR-12 implemented
+        - NFR-01 to NFR-10 validated
+        - Documentation complete
+        - Beta testers report positive experience
+    
+    phase_4_hardening:
+      duration: Weeks 13-14
+      goal: Production readiness
+      
+      activities:
+        - Bug triage and P0/P1 resolution
+        - Performance optimization
+        - Security audit
+        - Compatibility testing (Win10/Win11)
+        - Soak testing (48h+ runtime)
+        - Documentation review
+        - Release candidate builds
+      
+      exit_criteria:
+        - Zero P0/P1 bugs
+        - All quality gates passed
+        - Beta feedback ≥80% positive
+        - Release notes approved
+
+  rollback_strategy:
+    trigger_conditions:
+      - Phase exit criteria not met after 2 weeks overtime
+      - Critical blocker bug discovered with no solution
+      - Performance degradation >20% vs v2.2
+    
+    rollback_actions:
+      - Revert to pure PowerShell implementation
+      - Document lessons learned
+      - Re-evaluate technology stack
+      - Consider alternative UI frameworks (Avalonia, Electron)
+
+# ==================================================================================
+# REFACTORING ROADMAP
+# ==================================================================================
+
+refactoring_roadmap:
+  powershell_script_modularization:
+    step_1_extract_dashboard:
+      actions:
+        - Remove Show-PremiumDashboard
+        - Remove Show-StaticDashboard
+        - Remove Update-DynamicFields
+        - Remove Update-LogArea
+        - Remove Set-CursorPosition
+        - Remove Get-Bar
+        - Remove Write-PaddedField
+      reason: Dashboard logic moves to WPF XAML
+      estimated_loc_reduction: -400 lines
+    
+    step_2_convert_to_module:
+      actions:
+        - Create OptiGemini.psm1 module file
+        - Export public functions via Export-ModuleMember
+        - Move configuration to parameters with defaults
+        - Create OptiGemini.psd1 manifest
+      benefits:
+        - Functions are discoverable via Get-Command
+        - Versioning via manifest
+        - Dependency declaration
+        - Help documentation via comment-based help
+    
+    step_3_structured_output:
+      actions:
+        - Replace Write-Host with return statements
+        - Return PSCustomObject for metrics
+        - Use Write-Log for internal logging only
+        - Emit events via Write-Information stream
+      example:
+        before: |
+          Write-Host \"Latency: \ ms\" -ForegroundColor Green
+        after: |
+          [PSCustomObject]@{
+              Metric = 'Latency'
+              Value = \
+              Unit = 'ms'
+              Timestamp = Get-Date
+          }
+    
+    step_4_parameter_injection:
+      actions:
+        - Replace script-scoped config variables with parameters
+        - Accept configuration object as parameter
+        - Validate parameters with [ValidateRange], [ValidateSet]
+      example:
+        before: |
+          \ = \"8.8.8.8\"
+        after: |
+          param(
+              [ValidatePattern('\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}')]
+              [string]\ = \"8.8.8.8\"
+          )
+    
+    step_5_event_emission:
+      actions:
+        - Emit events for state changes
+        - Use Write-Information for structured events
+        - Define event schema
+      events:
+        - ConnectionStatusChanged
+        - MetricsUpdated
+        - RecoveryStarted
+        - RecoveryCompleted
+        - OptimizationApplied
+        - ErrorOccurred
+      implementation:
+        - Use -InformationAction Continue
+        - C# subscribes to Information stream
+
+  csharp_service_development:
+    MonitoringService:
+      responsibilities:
+        - Lifecycle: Start/Stop/Pause/Resume
+        - State machine: Idle → Starting → Running → Pausing → Paused → Stopping → Stopped
+        - Metrics aggregation and caching
+        - Watchdog timer for runspace health
+      
+      interfaces:
+        IMonitoringService:
+          methods:
+            - Task StartAsync()
+            - Task StopAsync()
+            - Task PauseAsync()
+            - Task ResumeAsync()
+            - MonitoringStatus GetStatus()
+          events:
+            - event EventHandler<MetricsUpdatedEventArgs> MetricsUpdated
+            - event EventHandler<StatusChangedEventArgs> StatusChanged
+            - event EventHandler<ErrorEventArgs> ErrorOccurred
+      
+      implementation_notes:
+        - Singleton pattern (DI registered as singleton)
+        - Thread-safe state management (lock or SemaphoreSlim)
+        - CancellationToken support for graceful shutdown
+    
+    PowerShellBridge:
+      responsibilities:
+        - Runspace lifecycle management
+        - Function invocation with parameter binding
+        - Output stream parsing
+        - Error handling and logging
+      
+      implementation:
+        - Use System.Management.Automation.PowerShell class
+        - Create runspace pool for parallel execution (future)
+        - Subscribe to Information stream for events
+        - Marshal PSObject to C# POCO
+      
+      example_usage:
+        csharp_code: |
+          public async Task<NetworkMetrics> GetNetworkMetricsAsync()
+          {
+              using var ps = PowerShell.Create(runspace);
+              ps.AddCommand(\"Get-NetworkMetrics\");
+              var results = await ps.InvokeAsync();
+              return results[0].BaseObject as NetworkMetrics;
+          }
+    
+    ConfigurationService:
+      schema:
+        json_structure: |
+          {
+            \"version\": \"1.0\",
+            \"activeProfile\": \"Home\",
+            \"monitoring\": {
+              \"primaryDns\": \"8.8.8.8\",
+              \"secondaryDns\": \"1.1.1.1\",
+              \"checkIntervalSeconds\": 3,
+              \"latencyThreshold\": 150,
+              \"packetLossThreshold\": 5,
+              \"jitterThreshold\": 30
+            },
+            \"hotspot\": {
+              \"ssid\": \"OptiGemini_5G\",
+              \"password\": \"gemini1234\"
+            },
+            \"ui\": {
+              \"theme\": \"Dark\",
+              \"startMinimized\": false,
+              \"enableNotifications\": true
+            }
+          }
+      
+      validation:
+        - JSON schema validation on load
+        - Fallback to defaults on corruption
+        - Migration strategy for schema updates
+    
+  wpf_ui_development:
+    MainWindow:
+      layout:
+        - Top: Status bar (connection status, profile, uptime)
+        - Left: Metrics panel (cards for latency, jitter, packet loss)
+        - Center: Charts (LiveCharts2 with 5-minute history)
+        - Right: Quick actions (Start/Stop, Optimize, Hotspot)
+        - Bottom: Log viewer (DataGrid with severity filtering)
+      
+      data_binding:
+        - ViewModel: MainWindowViewModel
+        - Properties: ObservableCollection<LogEntry>, NetworkMetrics, ConnectionStatus
+        - Commands: StartCommand, StopCommand, OptimizeCommand
+      
+      update_mechanism:
+        - Subscribe to MonitoringService.MetricsUpdated event
+        - Use Dispatcher.Invoke for cross-thread UI updates
+        - Throttle updates to 3 seconds to match polling interval
+    
+    SettingsWindow:
+      sections:
+        - General: Check interval, auto-start, minimize to tray
+        - Thresholds: Latency, packet loss, jitter sliders
+        - DNS: Primary/Secondary/Tertiary addresses
+        - Hotspot: SSID, password, auto-start
+        - Advanced: Registry optimizations toggle, QoS settings
+      
+      validation:
+        - Real-time input validation with error tooltips
+        - Apply/Cancel buttons
+        - Test DNS button to validate connectivity
+    
+    NotifyIcon:
+      context_menu:
+        - Show Dashboard
+        - Start Monitoring
+        - Stop Monitoring
+        - Profiles submenu
+        - Settings
+        - Exit
+      
+      tooltip:
+        - \"OptiGemini - Status: Connected, Latency: 45ms\"
+      
+      icon_states:
+        - Green: Connected, healthy
+        - Yellow: Connected, degraded
+        - Red: Disconnected
+        - Gray: Monitoring stopped
+
+# ==================================================================================
+# RISK ASSESSMENT & MITIGATION
+# ==================================================================================
+
+risks:
+  technical_risks:
+    - id: RISK-T01
+      description: PowerShell runspace instability causing frequent crashes
+      probability: MEDIUM
+      impact: HIGH
+      detection: Telemetry tracking runspace exceptions
+      mitigation:
+        - Implement comprehensive exception handling in PowerShellBridge
+        - Add watchdog timer to detect hung runspaces (30s timeout)
+        - Restart runspace automatically with exponential backoff
+        - Maintain separate runspace pool for resilience
+      contingency: Fallback to invoking PowerShell.exe as external process
+    
+    - id: RISK-T02
+      description: WPF rendering performance degrades on low-end hardware
+      probability: LOW
+      impact: MEDIUM
+      detection: Performance profiling on reference hardware (Intel Celeron, 4GB RAM)
+      mitigation:
+        - Use virtualization for charts (render only visible data points)
+        - Throttle UI updates to 3 seconds (match polling interval)
+        - Implement \"Performance Mode\" toggle to disable animations
+        - Profile with Visual Studio Timeline tool
+      contingency: Provide lightweight mode with simplified UI
+    
+    - id: RISK-T03
+      description: Data marshaling between C# and PowerShell introduces latency
+      probability: LOW
+      impact: LOW
+      detection: Benchmark round-trip invoke time
+      mitigation:
+        - Use PSObject.BaseObject for direct casting where possible
+        - Cache frequently accessed data
+        - Batch multiple metrics into single invocation
+      target_threshold: <100ms round-trip latency
+    
+    - id: RISK-T04
+      description: Thread safety issues with concurrent runspace access
+      probability: MEDIUM
+      impact: HIGH
+      detection: Race condition manifests as intermittent crashes or incorrect data
+      mitigation:
+        - Use single runspace with sequential invocations
+        - Protect shared state with SemaphoreSlim
+        - Avoid callback-based patterns, prefer async/await
+        - Comprehensive threading tests with ThreadSanitizer-like tool
+      contingency: Simplify to single-threaded execution model
+  
+  operational_risks:
+    - id: RISK-O01
+      description: Antivirus software flags installer as malware (false positive)
+      probability: MEDIUM
+      impact: HIGH
+      detection: VirusTotal scan during CI/CD
+      mitigation:
+        - Distribute SHA256 hash for verification
+        - Document AV exclusion instructions
+        - Pursue code signing certificate (future)
+        - Build with official .NET SDK (no unofficial tools)
+      contingency: Provide ZIP distribution as alternative to MSI
+    
+    - id: RISK-O02
+      description: Users lack administrator privileges required for optimizations
+      probability: MEDIUM
+      impact: MEDIUM
+      detection: UAC prompt decline, access denied errors
+      mitigation:
+        - Detect privilege level on startup
+        - Provide \"Read-Only Monitoring\" mode without admin
+        - Clear UX explaining why admin is needed
+        - Separate privileged operations from monitoring
+      contingency: Two-tier feature set (monitor vs optimize)
+    
+    - id: RISK-O03
+      description: Breaking changes in Windows updates affect network cmdlets
+      probability: LOW
+      impact: MEDIUM
+      detection: CI/CD tests on Windows Insider builds
+      mitigation:
+        - Abstract network operations behind adapter interface
+        - Maintain compatibility matrix (Win10 21H2+, Win11 21H2+)
+        - Subscribe to Windows networking API changelogs
+      contingency: Fallback to WMI queries or netsh commands
+  
+  adoption_risks:
+    - id: RISK-A01
+      description: Community does not adopt GUI application
+      probability: LOW
+      impact: MEDIUM
+      detection: GitHub download analytics, user feedback
+      mitigation:
+        - Preserve CLI mode via --headless flag
+        - Launch campaign targeting r/homelab, r/networking
+        - Create tutorial video demonstrating value
+        - Maintain v2.2 PowerShell script in repo for CLI users
+      contingency: Dual-track development (CLI + GUI)
+    
+    - id: RISK-A02
+      description: Competitors release similar tool before v3.0 launch
+      probability: LOW
+      impact: LOW
+      detection: Market research, competitor analysis
+      mitigation:
+        - Accelerate Phase 1 to establish presence
+        - Emphasize differentiators (open-source, PowerShell engine)
+        - Build community early via GitHub Discussions
+      contingency: Pivot to advanced features (ML, multi-device)
+
+# ==================================================================================
+# SUCCESS CRITERIA
+# ==================================================================================
+
+success_criteria:
+  phase_1_mvp:
+    - PowerShell functions invokable from C# with <100ms latency
+    - Dashboard displays real-time metrics with 3s refresh
+    - System tray icon persists and restores window
+    - Application startup time <3 seconds
+    - No memory leaks over 30-minute test
+  
+  phase_2_feature_parity:
+    - All 12 functional requirements (FR-01 to FR-12) implemented
+    - Performance within ±5% of v2.2 baseline
+    - Zero P0 bugs in backlog
+    - User acceptance testing ≥80% satisfaction
+  
+  phase_3_enhancement:
+    - MSI installer succeeds on clean Win10/Win11 VMs
+    - Auto-update downloads and installs successfully
+    - Notifications fire correctly and respect Focus Assist
+    - Documentation complete (README, Wiki, video)
+  
+  phase_4_launch:
+    - ≥500 downloads within first quarter
+    - ≥100 GitHub stars within first quarter
+    - ≥95% connection uptime in beta cohort
+    - SUS score ≥80 (n≥10)
+    - Zero critical bugs in first 30 days post-launch
+
+# ==================================================================================
+# APPENDICES
+# ==================================================================================
+
+appendices:
+  appendix_a_function_mapping:
+    description: Mapping of PowerShell functions to C# services
+    mapping:
+      Test-InternetConnection: PowerShellBridge.TestConnectionAsync()
+      Get-NetworkMetrics: PowerShellBridge.GetMetricsAsync()
+      Restart-InternetAdapter: PowerShellBridge.RestartAdapterAsync()
+      Set-FastestDNS: PowerShellBridge.OptimizeDnsAsync()
+      Optimize-NetworkSettings: PowerShellBridge.OptimizeSettingsAsync()
+      Start-Hotspot: PowerShellBridge.StartHotspotAsync()
+  
+  appendix_b_configuration_schema:
+    description: JSON schema for configuration persistence
+    schema_url: https://json-schema.org/draft/2020-12/schema
+    reference_implementation: ConfigurationService.cs
+  
+  appendix_c_performance_benchmarks:
+    description: Baseline performance metrics from v2.2
+    benchmarks:
+      - metric: Startup time
+        baseline: 2.1s
+        target: ≤3s
+      - metric: CPU usage (steady state)
+        baseline: 3.2%
+        target: ≤5%
+      - metric: RAM usage (steady state)
+        baseline: 45MB
+        target: ≤100MB
+      - metric: Network test latency
+        baseline: 15ms
+        target: ≤20ms
+  
+  appendix_d_glossary:
+    terms:
+      Brownfield: Existing system with legacy code requiring modernization
+      Strangler Fig: Pattern of gradually replacing legacy system
+      Runspace: PowerShell execution environment
+      PSCustomObject: PowerShell structured data type
+      CIM: Common Information Model (WMI successor)
+      QoS: Quality of Service
+      ICS: Internet Connection Sharing
+      MTU: Maximum Transmission Unit
+
+# ==================================================================================
+# DOCUMENT APPROVAL
+# ==================================================================================
+
+approval:
+  status: DRAFT
+  reviewers:
+    - role: Project Owner
+      name: Carlos Eduardo Zamora
+      approval_status: PENDING
+    
+    - role: Product Manager
+      name: John
+      approval_status: PENDING
+    
+    - role: QA Lead
+      name: Quinn
+      approval_status: PENDING
+  
+  change_log:
+    - version: 1.0
+      date: 2025-10-02
+      author: Winston (Architect)
+      changes: Initial brownfield architecture analysis and transformation plan
+
+---

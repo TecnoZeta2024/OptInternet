@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Restore runspace PoC dependencies
+        run: dotnet restore .\pocs\runspace\OptiGemini.RunspacePoC\OptiGemini.RunspacePoC.csproj
+
+      - name: Build runspace PoC
+        run: dotnet build .\pocs\runspace\OptiGemini.RunspacePoC\OptiGemini.RunspacePoC.csproj --configuration Release --no-restore
+
+      - name: Placeholder PowerShell smoke test
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell smoke tests not yet implemented."
+          Write-Host "TODO: Add Pester suite when OptiGemini module is refactored."
