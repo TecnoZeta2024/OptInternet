@@ -2,6 +2,7 @@ using OptiGemini.Desktop.Commands;
 using OptiGemini.Desktop.Models;
 using OptiGemini.Desktop.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
@@ -170,11 +171,11 @@ public class MainWindowViewModel : ViewModelBase
         });
     }
 
-    private void OnMonitoringError(object? sender, ErrorEventArgs e)
+    private void OnMonitoringError(object? sender, MonitoringErrorEventArgs e)
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            MessageBox.Show($"Monitoring error: {e.GetException()?.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Monitoring error: {e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         });
     }
 

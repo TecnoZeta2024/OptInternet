@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OptiGemini.Desktop.PowerShell;
+using System.IO;
 using System.Management.Automation;
 
 namespace OptiGemini.Desktop.Services;

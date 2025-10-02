@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OptiGemini.Desktop.Models;
+using System.ComponentModel;
 
 namespace OptiGemini.Desktop.Services;
 
@@ -35,7 +36,7 @@ public class MonitoringService : IMonitoringService, IDisposable
     }
 
     public event EventHandler<StateChangedEventArgs>? StateChanged;
-    public event EventHandler<ErrorEventArgs>? ErrorOccurred;
+    public event EventHandler<MonitoringErrorEventArgs>? ErrorOccurred;
 
     public MonitoringService(
         ILogger<MonitoringService> logger,
@@ -86,7 +87,7 @@ public class MonitoringService : IMonitoringService, IDisposable
             _logger.LogError(ex, "Failed to start monitoring");
             _loggingService.LogError($"Start failed: {ex.Message}", "MonitoringService");
             await TransitionToStateAsync(MonitoringState.Stopped, cancellationToken).ConfigureAwait(false);
-            OnErrorOccurred(new ErrorEventArgs(ex));
+            OnErrorOccurred(ex);
             throw;
         }
         finally
@@ -138,7 +139,7 @@ public class MonitoringService : IMonitoringService, IDisposable
         {
             _logger.LogError(ex, "Error during stop");
             _loggingService.LogError($"Stop error: {ex.Message}", "MonitoringService");
-            OnErrorOccurred(new ErrorEventArgs(ex));
+            OnErrorOccurred(ex);
             throw;
         }
         finally
@@ -174,7 +175,7 @@ public class MonitoringService : IMonitoringService, IDisposable
         {
             _logger.LogError(ex, "Error during pause");
             _loggingService.LogError($"Pause error: {ex.Message}", "MonitoringService");
-            OnErrorOccurred(new ErrorEventArgs(ex));
+            OnErrorOccurred(ex);
             throw;
         }
         finally
@@ -212,7 +213,7 @@ public class MonitoringService : IMonitoringService, IDisposable
         {
             _logger.LogError(ex, "Error during resume");
             _loggingService.LogError($"Resume error: {ex.Message}", "MonitoringService");
-            OnErrorOccurred(new ErrorEventArgs(ex));
+            OnErrorOccurred(ex);
             throw;
         }
         finally
@@ -250,7 +251,7 @@ public class MonitoringService : IMonitoringService, IDisposable
                 {
                     _logger.LogError(ex, "Error in monitoring cycle");
                     _loggingService.LogError($"Monitoring error: {ex.Message}", "MonitoringService");
-                    OnErrorOccurred(new ErrorEventArgs(ex));
+                    OnErrorOccurred(ex);
                 }
             }
         }
@@ -278,9 +279,9 @@ public class MonitoringService : IMonitoringService, IDisposable
         await Task.Run(() => StateChanged?.Invoke(this, eventArgs), cancellationToken).ConfigureAwait(false);
     }
 
-    private void OnErrorOccurred(ErrorEventArgs e)
+    private void OnErrorOccurred(Exception ex)
     {
-        ErrorOccurred?.Invoke(this, e);
+        ErrorOccurred?.Invoke(this, new MonitoringErrorEventArgs(ex));
     }
 
     public void Dispose()

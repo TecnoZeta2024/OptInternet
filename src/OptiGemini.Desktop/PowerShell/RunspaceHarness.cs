@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,7 @@ internal sealed class RunspaceHarness : IAsyncDisposable
     {
         DisposeRunspace();
 
-        using var initialState = InitialSessionState.CreateDefault2();
+        var initialState = InitialSessionState.CreateDefault2();
         
         // Import OptiGemini PowerShell module if it exists
         if (File.Exists(_modulePath))

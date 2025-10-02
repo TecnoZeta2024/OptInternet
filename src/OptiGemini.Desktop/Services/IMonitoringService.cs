@@ -1,4 +1,5 @@
 using OptiGemini.Desktop.Models;
+using System.ComponentModel;
 
 namespace OptiGemini.Desktop.Services;
 
@@ -14,7 +15,7 @@ public interface IMonitoringService
     event EventHandler<StateChangedEventArgs>? StateChanged;
 
     /// <summary>Raised when an error occurs</summary>
-    event EventHandler<ErrorEventArgs>? ErrorOccurred;
+    event EventHandler<MonitoringErrorEventArgs>? ErrorOccurred;
 
     /// <summary>Start monitoring operations</summary>
     Task StartAsync(CancellationToken cancellationToken = default);
@@ -37,4 +38,19 @@ public class StateChangedEventArgs : EventArgs
     public MonitoringState PreviousState { get; set; }
     public MonitoringState NewState { get; set; }
     public DateTime Timestamp { get; set; }
+}
+
+/// <summary>
+/// Event arguments for monitoring errors
+/// </summary>
+public class MonitoringErrorEventArgs : EventArgs
+{
+    public Exception Exception { get; set; }
+    public string Message { get; set; }
+    
+    public MonitoringErrorEventArgs(Exception exception)
+    {
+        Exception = exception;
+        Message = exception.Message;
+    }
 }
