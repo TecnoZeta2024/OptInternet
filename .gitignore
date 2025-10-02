@@ -7,3 +7,55 @@
 .kiro/steering/byterover-rules.md
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
+
+# .NET / Visual Studio build output
+bin/
+obj/
+artifacts/
+[Bb]uild/
+[Rr]elease/
+[Dd]ebug/
+TestResults/
+
+# IDE generated files
+.vs/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+
+# Package restore folders
+packages/
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Publish outputs
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.msi
+*.zip
+*.nupkg
+*.snupkg
+publish/
+
+# Coverage and analysis
+coverage/
+*.coverage
+*.coveragexml
+*.codecoverage
+
+# Logs and diagnostics
+logs/
+*.log
+*.svclog
+
+# Local environment
+*.db
+*.db-shm
+*.db-wal
+.idea/
+.DS_Store
+.env

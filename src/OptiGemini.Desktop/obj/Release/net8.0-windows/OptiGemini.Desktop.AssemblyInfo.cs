@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Professional network monitoring and optimization for Windows 11")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("3.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("3.0.0+c09ec1a804ad9a62b7df1ee24188f07b12ae7ceb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("3.0.0+5a681f56b05503a92a4ed56ffc4616430222c13c")]
 [assembly: System.Reflection.AssemblyProductAttribute("OptiGemini Network Optimizer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OptiGemini")]
 [assembly: System.Reflection.AssemblyVersionAttribute("3.0.0.0")]

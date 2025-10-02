@@ -15,12 +15,12 @@ This document outlines the testing strategy for the OptiGemini MSI installer, co
    - With and without prerequisites installed
 
 ### Test Prerequisites Status Matrix
-| Test Scenario | .NET 7 Desktop Runtime | PowerShell 7.4+ | Expected Behavior |
-|--------------|------------------------|-----------------|-------------------|
-| Scenario A   | ✓ Installed            | ✓ Installed     | Full installation |
-| Scenario B   | ✗ Not installed        | ✓ Installed     | Prompt for .NET, abort if declined |
-| Scenario C   | ✓ Installed            | ✗ Not installed | Warning, continue with limited mode |
-| Scenario D   | ✗ Not installed        | ✗ Not installed | Prompt for .NET first, then PowerShell |
+| Test Scenario | .NET 7 Desktop Runtime | PowerShell 7.4+ | Expected Behavior                      |
+| ------------- | ---------------------- | --------------- | -------------------------------------- |
+| Scenario A    | ✓ Installed            | ✓ Installed     | Full installation                      |
+| Scenario B    | ✗ Not installed        | ✓ Installed     | Prompt for .NET, abort if declined     |
+| Scenario C    | ✓ Installed            | ✗ Not installed | Warning, continue with limited mode    |
+| Scenario D    | ✗ Not installed        | ✗ Not installed | Prompt for .NET first, then PowerShell |
 
 ## Test Cases
 
@@ -283,18 +283,18 @@ Tests run automatically via GitHub Actions (`.github/workflows/build-msi.yml`):
 **Environment**: Windows 11 23H2 (Build 22631.xxxx)  
 
 ### Test Results Summary
-| Test Case | Status | Notes |
-|-----------|--------|-------|
-| TC-001    | ✅ PASS | Installation successful |
-| TC-002    | ✅ PASS | Prerequisite check working |
+| Test Case | Status | Notes                       |
+| --------- | ------ | --------------------------- |
+| TC-001    | ✅ PASS | Installation successful     |
+| TC-002    | ✅ PASS | Prerequisite check working  |
 | TC-003    | ✅ PASS | Warning displayed correctly |
-| TC-004    | ✅ PASS | Application launched |
-| TC-005    | ✅ PASS | Uninstalled cleanly |
-| TC-006    | ✅ PASS | Backup created |
-| TC-007    | ⚠️ SKIP | Requires v3.0.1 build |
-| TC-008    | ⚠️ SKIP | Requires v3.0.1 build |
-| TC-009    | ✅ PASS | Silent install works |
-| TC-010    | ✅ PASS | Custom directory works |
+| TC-004    | ✅ PASS | Application launched        |
+| TC-005    | ✅ PASS | Uninstalled cleanly         |
+| TC-006    | ✅ PASS | Backup created              |
+| TC-007    | ⚠️ SKIP | Requires v3.0.1 build       |
+| TC-008    | ⚠️ SKIP | Requires v3.0.1 build       |
+| TC-009    | ✅ PASS | Silent install works        |
+| TC-010    | ✅ PASS | Custom directory works      |
 
 ### Issues Found
 1. **Issue #1**: [Description]
@@ -317,12 +317,12 @@ Run full test suite for:
 - WiX toolset upgrades
 
 ## Performance Benchmarks
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| MSI file size | < 50 MB | [Actual] MB |
-| Installation time | < 60 seconds | [Actual] seconds |
+| Metric              | Target       | Measurement      |
+| ------------------- | ------------ | ---------------- |
+| MSI file size       | < 50 MB      | [Actual] MB      |
+| Installation time   | < 60 seconds | [Actual] seconds |
 | Uninstallation time | < 30 seconds | [Actual] seconds |
-| First launch time | < 5 seconds | [Actual] seconds |
+| First launch time   | < 5 seconds  | [Actual] seconds |
 
 ## Known Limitations
 1. Requires administrator privileges for installation

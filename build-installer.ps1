@@ -72,7 +72,8 @@ try {
     $dotnetVersion = dotnet --version
     if ($LASTEXITCODE -eq 0) {
         Write-Success ".NET SDK $dotnetVersion"
-    } else {
+    }
+    else {
         Write-Failure ".NET SDK not found"
         exit 1
     }
@@ -81,7 +82,8 @@ try {
     $wixVersion = wix --version 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Success "WiX Toolset $wixVersion"
-    } else {
+    }
+    else {
         Write-Failure "WiX Toolset not found. Install with: dotnet tool install --global wix"
         exit 1
     }
@@ -97,7 +99,8 @@ try {
         if (Test-Path $exePath) {
             $exeInfo = Get-Item $exePath
             Write-Success "Runspace PoC built successfully ($([math]::Round($exeInfo.Length / 1KB, 2)) KB)"
-        } else {
+        }
+        else {
             Write-Failure "Runspace PoC executable not found"
             exit 1
         }
@@ -117,7 +120,8 @@ try {
         if (Test-Path $dllPath) {
             $dllInfo = Get-Item $dllPath
             Write-Success "Custom Actions built successfully ($([math]::Round($dllInfo.Length / 1KB, 2)) KB)"
-        } else {
+        }
+        else {
             Write-Failure "Custom Actions DLL not found"
             exit 1
         }
@@ -137,7 +141,8 @@ try {
             $msiInfo = Get-Item $msiPath
             Write-Success "MSI built successfully ($([math]::Round($msiInfo.Length / 1MB, 2)) MB)"
             Write-Host "  Path: $($msiInfo.FullName)" -ForegroundColor Gray
-        } else {
+        }
+        else {
             Write-Failure "MSI file not found"
             exit 1
         }
@@ -155,7 +160,8 @@ try {
         # Test 1: MSI file exists
         if (Test-Path $msiPath) {
             Write-Success "Test 1: MSI file exists"
-        } else {
+        }
+        else {
             Write-Failure "Test 1: MSI file not found"
             exit 1
         }
@@ -164,7 +170,8 @@ try {
         $msiSize = (Get-Item $msiPath).Length
         if ($msiSize -gt 1MB) {
             Write-Success "Test 2: MSI size is valid ($([math]::Round($msiSize / 1MB, 2)) MB)"
-        } else {
+        }
+        else {
             Write-Failure "Test 2: MSI size is suspiciously small"
             exit 1
         }
@@ -200,7 +207,8 @@ try {
             Write-Host ""
             Write-Host "Application installed to: C:\Program Files\OptiGemini" -ForegroundColor Cyan
             Write-Host "Launch from Start Menu or Desktop shortcut" -ForegroundColor Cyan
-        } else {
+        }
+        else {
             Write-Failure "Installation failed (Exit code: $($process.ExitCode))"
             Write-Host "Check log file: $logPath" -ForegroundColor Yellow
             exit 1
@@ -233,12 +241,14 @@ try {
             
             if ($process.ExitCode -eq 0) {
                 Write-Success "Uninstallation completed successfully"
-            } else {
+            }
+            else {
                 Write-Failure "Uninstallation failed (Exit code: $($process.ExitCode))"
                 Write-Host "Check log file: $logPath" -ForegroundColor Yellow
                 exit 1
             }
-        } else {
+        }
+        else {
             Write-Failure "OptiGemini is not installed"
         }
     }

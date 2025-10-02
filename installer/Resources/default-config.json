@@ -1,36 +1,36 @@
 {
-  "version": "3.0.0",
-  "monitoring": {
-    "checkIntervalSeconds": 3,
-    "maxRetries": 5,
-    "retryDelaySeconds": 1,
-    "latencyThreshold": 150,
-    "packetLossThreshold": 5,
-    "jitterThreshold": 30
-  },
-  "dns": {
-    "primaryServer": "8.8.8.8",
-    "secondaryServer": "1.1.1.1",
-    "tertiaryServer": "208.67.222.222"
-  },
-  "hotspot": {
-    "ssid": "OptiGemini_5G",
-    "password": "gemini1234",
-    "enabled": false
-  },
-  "logging": {
-    "enabled": true,
-    "logLevel": "INFO",
-    "maxLogSizeMB": 10,
-    "logRetentionDays": 30
-  },
-  "ui": {
-    "theme": "auto",
-    "startMinimized": false,
-    "minimizeToTray": true,
-    "showNotifications": true
-  },
-  "profiles": {
-    "activeProfile": "default"
-  }
+    "version": "3.0.0",
+    "monitoring": {
+        "checkIntervalSeconds": 3,
+        "maxRetries": 5,
+        "retryDelaySeconds": 1,
+        "latencyThreshold": 150,
+        "packetLossThreshold": 5,
+        "jitterThreshold": 30
+    },
+    "dns": {
+        "primaryServer": "8.8.8.8",
+        "secondaryServer": "1.1.1.1",
+        "tertiaryServer": "208.67.222.222"
+    },
+    "hotspot": {
+        "ssid": "OptiGemini_5G",
+        "password": "gemini1234",
+        "enabled": false
+    },
+    "logging": {
+        "enabled": true,
+        "logLevel": "INFO",
+        "maxLogSizeMB": 10,
+        "logRetentionDays": 30
+    },
+    "ui": {
+        "theme": "auto",
+        "startMinimized": false,
+        "minimizeToTray": true,
+        "showNotifications": true
+    },
+    "profiles": {
+        "activeProfile": "default"
+    }
 }
