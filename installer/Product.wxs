@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?define ProductName = "OptiGemini" ?>
+  <?define ProductVersion = "3.0.0.0" ?>
+  <?define Manufacturer = "TecnoZeta" ?>
+  <?define UpgradeCode = "12345678-1234-1234-1234-123456789012" ?>
+  
+  <Package Name="$(var.ProductName)"
+           Version="$(var.ProductVersion)"
+           Manufacturer="$(var.Manufacturer)"
+           UpgradeCode="$(var.UpgradeCode)"
+           Language="1033"
+           Compressed="yes"
+           InstallerVersion="500"
+           Scope="perMachine">
+
+    <SummaryInformation Description="OptiGemini Network Optimization Tool"
+                        Comments="Professional network monitoring and optimization for Windows"
+                        Manufacturer="$(var.Manufacturer)" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+                  AllowSameVersionUpgrades="yes"
+                  Schedule="afterInstallInitialize" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Icon for Programs and Features -->
+    <Icon Id="ProductIcon" SourceFile="Resources\OptiGemini.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/TecnoZeta2024/OptInternet" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/TecnoZeta2024/OptInternet" />
+
+    <!-- Launch Conditions -->
+    <Launch Condition="Installed OR (VersionNT &gt;= 603)" 
+            Message="This application requires Windows 10 version 21H2 or later." />
+
+    <!-- Custom UI -->
+    <WixVariable Id="WixUILicenseRtf" Value="Resources\License.rtf" />
+    <WixVariable Id="WixUIBannerBmp" Value="Resources\Banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Resources\Dialog.bmp" />
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <!-- Prerequisite Properties -->
+    <Property Id="DOTNETDESKTOPRUNTIME7X">
+      <RegistrySearch Id="SearchDotNet7Desktop"
+                      Root="HKLM"
+                      Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost"
+                      Name="Version"
+                      Type="raw" />
+    </Property>
+
+    <Property Id="POWERSHELL7INSTALLED">
+      <RegistrySearch Id="SearchPowerShell7"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\PowerShell\7"
+                      Name="Install"
+                      Type="raw" />
+    </Property>
+
+    <!-- Directory Structure -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="OptiGemini">
+        <Directory Id="BinFolder" Name="bin" />
+        <Directory Id="ModulesFolder" Name="Modules" />
+        <Directory Id="LogsFolder" Name="logs" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="OptiGemini" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="AppDataFolder">
+      <Directory Id="OptiGeminiAppData" Name="OptiGemini">
+        <Directory Id="ProfilesFolder" Name="profiles" />
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Components -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      
+      <!-- Main Application Binaries -->
+      <Component Id="MainExecutable" Guid="A1234567-1234-1234-1234-123456789012">
+        <File Id="OptiGeminiExe" 
+              Source="..\pocs\runspace\OptiGemini.RunspacePoC\bin\Release\net7.0\OptiGemini.RunspacePoC.exe"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="RuntimeDlls" Guid="A2234567-1234-1234-1234-123456789012">
+        <File Id="RunspaceHarness" 
+              Source="..\pocs\runspace\OptiGemini.RunspacePoC\bin\Release\net7.0\OptiGemini.RunspacePoC.dll" />
+        <File Id="SystemManagementAutomation" 
+              Source="..\pocs\runspace\OptiGemini.RunspacePoC\bin\Release\net7.0\System.Management.Automation.dll" />
+      </Component>
+
+      <!-- PowerShell Modules -->
+      <Component Id="PowerShellModule" Directory="ModulesFolder" Guid="A3234567-1234-1234-1234-123456789012">
+        <File Id="OptiGeminiPsm1" 
+              Source="..\pocs\runspace\Modules\OptiGemini.psm1"
+              KeyPath="yes" />
+      </Component>
+
+      <!-- Configuration Files -->
+      <Component Id="ConfigFiles" Guid="A4234567-1234-1234-1234-123456789012">
+        <File Id="DefaultConfig" 
+              Source="Resources\default-config.json"
+              KeyPath="yes" />
+      </Component>
+
+      <!-- Registry Entries -->
+      <Component Id="RegistryEntries" Guid="A5234567-1234-1234-1234-123456789012">
+        <RegistryKey Root="HKLM" Key="Software\TecnoZeta\OptiGemini">
+          <RegistryValue Type="string" Name="InstallPath" Value="[INSTALLFOLDER]" KeyPath="yes" />
+          <RegistryValue Type="string" Name="Version" Value="$(var.ProductVersion)" />
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+
+    <!-- Start Menu Shortcuts -->
+    <ComponentGroup Id="StartMenuShortcuts" Directory="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="A6234567-1234-1234-1234-123456789012">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="OptiGemini"
+                  Description="Network Optimization and Monitoring Tool"
+                  Target="[INSTALLFOLDER]bin\OptiGemini.RunspacePoC.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="ProductIcon" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\TecnoZeta\OptiGemini" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Feature Definition -->
+    <Feature Id="ProductFeature" 
+             Title="OptiGemini Core" 
+             Description="Main application files and monitoring engine"
+             Level="1"
+             ConfigurableDirectory="INSTALLFOLDER"
+             AllowAdvertise="no"
+             Display="expand">
+      
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="StartMenuShortcuts" />
+
+      <Feature Id="DesktopShortcut" 
+               Title="Desktop Shortcut" 
+               Description="Create shortcut on desktop"
+               Level="1">
+        <ComponentRef Id="DesktopShortcutComponent" />
+      </Feature>
+    </Feature>
+
+    <!-- Desktop Shortcut Component -->
+    <Component Id="DesktopShortcutComponent" Directory="DesktopFolder" Guid="A7234567-1234-1234-1234-123456789012">
+      <Shortcut Id="DesktopShortcut"
+                Name="OptiGemini"
+                Description="Network Optimization and Monitoring Tool"
+                Target="[INSTALLFOLDER]bin\OptiGemini.RunspacePoC.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="ProductIcon" />
+      <RegistryValue Root="HKCU" Key="Software\TecnoZeta\OptiGemini" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Custom Actions Reference -->
+    <CustomActionRef Id="CheckDotNetRuntime" />
+    <CustomActionRef Id="CheckPowerShell7" />
+    <CustomActionRef Id="BackupUserProfiles" />
+
+    <!-- Install Sequence -->
+    <InstallExecuteSequence>
+      <Custom Action="CheckDotNetRuntime" Before="LaunchConditions">NOT Installed</Custom>
+      <Custom Action="CheckPowerShell7" After="CheckDotNetRuntime">NOT Installed</Custom>
+      <Custom Action="BackupUserProfiles" Before="RemoveFiles">REMOVE="ALL"</Custom>
+    </InstallExecuteSequence>
+
+    <InstallUISequence>
+      <Custom Action="CheckDotNetRuntime" Before="LaunchConditions">NOT Installed</Custom>
+      <Custom Action="CheckPowerShell7" After="CheckDotNetRuntime">NOT Installed</Custom>
+    </InstallUISequence>
+
+  </Package>
+</Wix>

@@ -1,0 +1,314 @@
+name: Build MSI Installer
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'release/**'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '7.0.x'
+  WIX_VERSION: '4.0.5'
+  CONFIGURATION: Release
+
+jobs:
+  build-runspace-poc:
+    name: Build Runspace PoC
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore pocs/runspace/OptiGemini.RunspacePoC/OptiGemini.RunspacePoC.csproj
+
+      - name: Build Runspace PoC
+        run: dotnet build pocs/runspace/OptiGemini.RunspacePoC/OptiGemini.RunspacePoC.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Upload Runspace PoC artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: runspace-poc-binaries
+          path: pocs/runspace/OptiGemini.RunspacePoC/bin/Release/net7.0/
+          retention-days: 7
+
+  build-custom-actions:
+    name: Build Custom Actions
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore installer.customactions/OptiGemini.CustomActions.csproj
+
+      - name: Build Custom Actions
+        run: dotnet build installer.customactions/OptiGemini.CustomActions.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Upload Custom Actions artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-actions-dll
+          path: installer.customactions/bin/Release/net7.0/
+          retention-days: 7
+
+  build-msi:
+    name: Build MSI Installer
+    runs-on: windows-latest
+    needs: [build-runspace-poc, build-custom-actions]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install WiX Toolset
+        run: dotnet tool install --global wix --version ${{ env.WIX_VERSION }}
+
+      - name: Download Runspace PoC binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: runspace-poc-binaries
+          path: pocs/runspace/OptiGemini.RunspacePoC/bin/Release/net7.0/
+
+      - name: Download Custom Actions DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: custom-actions-dll
+          path: installer.customactions/bin/Release/net7.0/
+
+      - name: Build WiX installer
+        working-directory: installer
+        run: |
+          wix build OptiGemini.Installer.wixproj -o bin\Release\OptiGemini.msi
+
+      - name: Verify MSI created
+        run: |
+          if (Test-Path "installer\bin\Release\OptiGemini.msi") {
+            Write-Host "✓ MSI file created successfully"
+            $msiInfo = Get-Item "installer\bin\Release\OptiGemini.msi"
+            Write-Host "  Size: $([math]::Round($msiInfo.Length / 1MB, 2)) MB"
+            Write-Host "  Path: $($msiInfo.FullName)"
+          } else {
+            Write-Error "✗ MSI file not found!"
+            exit 1
+          }
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OptiGemini-MSI-${{ github.sha }}
+          path: installer/bin/Release/OptiGemini.msi
+          retention-days: 30
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            installer/bin/Release/*.log
+            installer/bin/Release/*.wixpdb
+          retention-days: 7
+
+  mirror-to-backup:
+    name: Mirror to Backup Remote
+    runs-on: windows-latest
+    needs: build-msi
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure backup remote
+        run: |
+          git remote add backup ${{ secrets.BACKUP_REMOTE_URL }} || true
+          git remote -v
+
+      - name: Push to backup remote
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_REMOTE_TOKEN }}
+        run: |
+          git push backup ${{ github.ref }} || Write-Warning "Failed to push to backup remote"
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: windows-latest
+    needs: build-msi
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download MSI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: OptiGemini-MSI-${{ github.sha }}
+          path: ./release
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "Version: $version"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: OptiGemini v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## OptiGemini v${{ steps.version.outputs.VERSION }}
+            
+            ### Installation
+            1. Download `OptiGemini.msi`
+            2. Run the installer
+            3. Follow the setup wizard
+            
+            ### Prerequisites
+            - Windows 10 21H2+ or Windows 11 23H2
+            - .NET Desktop Runtime 7.x (installer will prompt if missing)
+            - PowerShell 7.4+ (recommended, optional for limited mode)
+            
+            ### What's New
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+            
+            ### Support
+            - Report issues: https://github.com/${{ github.repository }}/issues
+            - Documentation: https://github.com/${{ github.repository }}/wiki
+          files: |
+            ./release/OptiGemini.msi
+          draft: false
+          prerelease: false
+
+  test-installation:
+    name: Test Installation
+    runs-on: windows-latest
+    needs: build-msi
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download MSI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: OptiGemini-MSI-${{ github.sha }}
+          path: ./test
+
+      - name: Install MSI (silent)
+        run: |
+          $msiPath = Resolve-Path "test\OptiGemini.msi"
+          $logPath = "$env:TEMP\OptiGemini_CI_Install.log"
+          
+          Write-Host "Installing MSI: $msiPath"
+          $process = Start-Process msiexec.exe -ArgumentList "/i `"$msiPath`" /qn /l*v `"$logPath`"" -Wait -PassThru
+          
+          if ($process.ExitCode -eq 0) {
+            Write-Host "✓ Installation successful"
+          } else {
+            Write-Error "✗ Installation failed with exit code: $($process.ExitCode)"
+            Get-Content $logPath | Select-Object -Last 50
+            exit 1
+          }
+
+      - name: Verify installation
+        run: |
+          $installPath = "C:\Program Files\OptiGemini"
+          $exePath = "$installPath\bin\OptiGemini.RunspacePoC.exe"
+          
+          if (Test-Path $installPath) {
+            Write-Host "✓ Installation directory exists"
+          } else {
+            Write-Error "✗ Installation directory not found"
+            exit 1
+          }
+          
+          if (Test-Path $exePath) {
+            Write-Host "✓ Executable exists"
+            $version = (Get-Item $exePath).VersionInfo
+            Write-Host "  Product: $($version.ProductName)"
+            Write-Host "  Version: $($version.FileVersion)"
+          } else {
+            Write-Error "✗ Executable not found"
+            exit 1
+          }
+
+      - name: Test application launch
+        run: |
+          $exePath = "C:\Program Files\OptiGemini\bin\OptiGemini.RunspacePoC.exe"
+          
+          Write-Host "Testing application launch..."
+          $process = Start-Process $exePath -PassThru -NoNewWindow
+          Start-Sleep -Seconds 5
+          
+          if (!$process.HasExited) {
+            Write-Host "✓ Application launched successfully"
+            Stop-Process -Id $process.Id -Force
+          } else {
+            Write-Error "✗ Application exited prematurely (Exit code: $($process.ExitCode))"
+            exit 1
+          }
+
+      - name: Uninstall MSI
+        if: always()
+        run: |
+          $logPath = "$env:TEMP\OptiGemini_CI_Uninstall.log"
+          $productCode = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -eq "OptiGemini" } | Select-Object -ExpandProperty IdentifyingNumber
+          
+          if ($productCode) {
+            Write-Host "Uninstalling OptiGemini (Product Code: $productCode)"
+            $process = Start-Process msiexec.exe -ArgumentList "/x `"$productCode`" /qn /l*v `"$logPath`"" -Wait -PassThru
+            
+            if ($process.ExitCode -eq 0) {
+              Write-Host "✓ Uninstallation successful"
+            } else {
+              Write-Warning "Uninstallation completed with exit code: $($process.ExitCode)"
+            }
+          } else {
+            Write-Warning "Product not found in registry (may have failed to install)"
+          }
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: ${{ env.TEMP }}/OptiGemini_CI_*.log
+          retention-days: 7

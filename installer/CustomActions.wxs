@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  
+  <Fragment>
+    <!-- Custom Action DLLs -->
+    <Binary Id="CustomActionsDll" SourceFile="..\installer.customactions\bin\Release\net7.0\OptiGemini.CustomActions.dll" />
+
+    <!-- Check .NET Desktop Runtime 7.x -->
+    <CustomAction Id="CheckDotNetRuntime"
+                  BinaryRef="CustomActionsDll"
+                  DllEntry="CheckDotNetDesktopRuntime"
+                  Execute="immediate"
+                  Return="check" />
+
+    <!-- Check PowerShell 7.4+ -->
+    <CustomAction Id="CheckPowerShell7"
+                  BinaryRef="CustomActionsDll"
+                  DllEntry="CheckPowerShell74"
+                  Execute="immediate"
+                  Return="check" />
+
+    <!-- Backup User Profiles on Uninstall -->
+    <CustomAction Id="BackupUserProfiles"
+                  BinaryRef="CustomActionsDll"
+                  DllEntry="BackupUserProfiles"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="check" />
+  </Fragment>
+
+</Wix>
